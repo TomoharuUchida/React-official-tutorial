@@ -33,6 +33,11 @@ ul {
   width: 34px;
 }
 
+/* 勝利につながったセルにハイライトをつける */
+.square.caused-win{
+  background:aqua;
+}
+
 .square:focus {
   outline: none;
 }
