@@ -6,7 +6,7 @@ import './index.css';
 function Square(props) {
     return (
         <button
-            className="square"
+            className= {"square"+(props.causedWin ? " caused-win" : "")}
             onClick={props.onClick}
         >
             {props.value}
@@ -17,12 +17,13 @@ function Square(props) {
 class Board extends React.Component {
 
     
-  renderSquare(i) {
+  renderSquare(i,causedWin) {
     return (
       <Square
         value={this.props.squares[i]}
         onClick={() => this.props.onClick(i)}
         key={i}
+        causedWin = {causedWin}
       />
     )
   }
@@ -38,7 +39,11 @@ class Board extends React.Component {
               className="board-row"
               key={row}
             >
-              {cols.map(col => this.renderSquare(row * 3 + col))}
+              {cols.map(col => {
+                const cell = row * 3 + col;
+                const causedWin = this.props.causeWinCells.includes(cell);
+                return this.renderSquare(cell, causedWin);
+              })}
             </div>
           );
         })}
@@ -69,7 +74,8 @@ class Game extends React.Component {
         const history = this.state.history.slice(0,this.state.stepNumber+1);
         const current = history[history.length - 1];
         const squares = current.squares.slice();
-        if (calculateWinner(squares) || squares[i]) {
+        const winInfo = calculateWinner(squares);
+        if (winInfo.winner || squares[i]) {
             return;
         }
         squares[i] = this.state.xIsNext ? "X" : "O";
@@ -102,7 +108,7 @@ class Game extends React.Component {
         const history = this.state.isAscendingOrder ? this.state.history : this.state.history.slice().reverse();
         const currentStepNumber = this.state.isAscendingOrder ? this.state.stepNumber : history.length-1 -this.state.stepNumber;
         const current = history[currentStepNumber];
-        const winner = calculateWinner(current.squares);
+        const winInfo = calculateWinner(current.squares);
 
       const moves = history.map((step, move) => {
             const moveIndex = this.state.isAscendingOrder ? move : history.length - 1 - move;
@@ -122,8 +128,8 @@ class Game extends React.Component {
         })
 
         let status;
-        if (winner) {
-            status = "Winner" + winner;
+        if (winInfo.winner) {
+            status = "Winner:" + winInfo.winner;
         } else {
             status = "Next player:" + (this.state.xIsNext ? "X" : "O");
         }
@@ -133,7 +139,8 @@ class Game extends React.Component {
             <div className="game-board">
                     <Board
                         squares={current.squares}
-                        onClick={(i)=> this.handleClick(i)}
+                        onClick={(i) => this.handleClick(i)}
+                        causeWinCells={winInfo.causeWinCells}
                     />
             </div>
             <div className="game-info">
@@ -163,10 +170,17 @@ function calculateWinner(squares) {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      return {
+        winner: squares[a],
+        causeWinCells: lines[i],
+      };
+      
     }
   }
-  return null;
+  return {
+    winner: null,
+   causeWinCells: [],
+  }
 }
 
 // ========================================
