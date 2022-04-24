@@ -130,6 +130,8 @@ class Game extends React.Component {
         let status;
         if (winInfo.winner) {
             status = "Winner:" + winInfo.winner;
+        } else if (!current.squares.includes(null)) {
+          status = "Draw";
         } else {
             status = "Next player:" + (this.state.xIsNext ? "X" : "O");
         }
@@ -175,7 +177,7 @@ function calculateWinner(squares) {
         causeWinCells: lines[i],
       };
       
-    }
+    } 
   }
   return {
     winner: null,
