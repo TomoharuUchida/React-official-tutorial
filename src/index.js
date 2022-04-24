@@ -60,6 +60,7 @@ class Game extends React.Component {
               },
             }],
             stepNumber: 0,
+            isAscendingOrder: true,
             xIsNext: true,
         };
     }
@@ -91,20 +92,28 @@ class Game extends React.Component {
         });
     }
 
+    reverseHistoryOrder() {
+      this.setState({
+        isAscendingOrder:!this.state.isAscendingOrder,
+      });
+    }
+
     render() {
-        const history = this.state.history;
-        const current = history[this.state.stepNumber];
+        const history = this.state.isAscendingOrder ? this.state.history : this.state.history.slice().reverse();
+        const currentStepNumber = this.state.isAscendingOrder ? this.state.stepNumber : history.length-1 -this.state.stepNumber;
+        const current = history[currentStepNumber];
         const winner = calculateWinner(current.squares);
 
-        const moves = history.map((step, move) => {
-            const desc = move ?
-                "Go to move #" + move +"("+step.location.col+","+step.location.row+")":
+      const moves = history.map((step, move) => {
+            const moveIndex = this.state.isAscendingOrder ? move : history.length - 1 - move;
+            const desc = moveIndex ?
+                "Go to move #" + moveIndex +"("+step.location.col+","+step.location.row+")":
                 "Go to game start";
             return (
-                <li key={move}>
+                <li key={moveIndex}>
                     <button
-                      onClick={() => this.jumpTo(move)}
-                      className={move===this.state.stepNumber ? "text-bold" : ""}
+                      onClick={() => this.jumpTo(moveIndex)}
+                      className={move=== currentStepNumber ? "text-bold" : ""}
                     >
                         {desc}
                     </button>
@@ -118,20 +127,25 @@ class Game extends React.Component {
         } else {
             status = "Next player:" + (this.state.xIsNext ? "X" : "O");
         }
-    return (
-      <div className="game">
-        <div className="game-board">
-                <Board
-                    squares={current.squares}
-                    onClick={(i)=> this.handleClick(i)}
-                />
-        </div>
-        <div className="game-info">
-          <div>{status}</div>
-          <ol>{moves}</ol>
-        </div>
-      </div>
-    );
+      
+        return (
+          <div className="game">
+            <div className="game-board">
+                    <Board
+                        squares={current.squares}
+                        onClick={(i)=> this.handleClick(i)}
+                    />
+            </div>
+            <div className="game-info">
+              <div>{status}</div>
+              <ol>{moves}</ol>
+              <button
+                onClick={()=>this.reverseHistoryOrder()}
+              >Reverse History Order
+              </button>
+            </div>
+          </div>
+        );
   }
 }
 
